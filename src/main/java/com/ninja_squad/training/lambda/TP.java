@@ -2,7 +2,6 @@ package com.ninja_squad.training.lambda;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Le TP Lambda
@@ -83,16 +82,25 @@ public class TP {
     }
 
     public static class Stats {
-        // TODO
+
+        private int count;
+        private int total;
+
+        public Stats(int count, int total) {
+            this.count = count;
+            this.total = total;
+        }
 
         public int getAverage() {
-            // TODO
-            return 0;
+            return total / count;
         }
 
         public int getTotal() {
-            // TODO
-            return 0;
+            return total;
+        }
+
+        public int getCount() {
+            return count;
         }
     }
 
@@ -103,13 +111,15 @@ public class TP {
      *     Utilisez stream.collect(..., ..., ...) ou stream.map(...).reduce(...)
      */
     public static Stats step11() {
-        return null;
+        return Tweet.TWEETS.stream().map(t -> new Stats(1, t.getText().length()))
+                .reduce((s1, s2) -> new Stats(s1.getCount() + s2.getCount(), s1.getTotal() + s2.getTotal())).get();
     }
 
     /**
      * Faites la même chose, mais de manière parrallèle
      */
     public static Stats step12() {
-        return null;
+        return Tweet.TWEETS.stream().parallel().map(t -> new Stats(1, t.getText().length()))
+                .reduce((s1, s2) -> new Stats(s1.getCount() + s2.getCount(), s1.getTotal() + s2.getTotal())).get();
     }
 }
