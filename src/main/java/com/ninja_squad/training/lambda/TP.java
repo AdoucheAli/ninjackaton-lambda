@@ -167,10 +167,4 @@ public class TP {
                     .map(t -> new Stats(t))
                     .reduce(new Stats(0, 0), (t1, t2) -> t1.withStats(t2));
     }
-
-    public static Map<Long, Tweet> step13() {
-        return Tweet.TWEETS.stream().collect(() -> new HashMap<Long, Tweet>(),
-                                             (map, tweet) -> map.put(tweet.getId(), tweet),
-                                             (map1, map2) -> map1.putAll(map2));
-    }
 }
