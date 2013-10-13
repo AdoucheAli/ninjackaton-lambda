@@ -20,7 +20,7 @@ public class TP {
         Arrays.asList(TP.class.getDeclaredMethods()).forEach(m -> System.out.println(m + " " + m.isBridge() + " " + m.isSynthetic()));
     }
     /**
-     * Extrayez une List<String> qui contient les senders des tweets
+     * Ecrivez les dates des tweets sur la sortie standard
      */
     public static void step1() {
         Tweet.TWEETS.forEach(t -> System.out.println(t.getDate()));
