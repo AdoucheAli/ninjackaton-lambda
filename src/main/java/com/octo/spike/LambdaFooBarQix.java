@@ -1,7 +1,10 @@
 package com.octo.spike;
 
-import java.util.*;
-import java.util.stream.Collector;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public class LambdaFooBarQix {
@@ -22,8 +25,8 @@ public class LambdaFooBarQix {
         final SortedSet<Integer> integers = codes.navigableKeySet();
         List<String> result = integers.stream().filter(i -> value % i == 0).map(i -> codes.get(i)).collect(Collectors.<String>toList());
         String charValue = Integer.toString(value);
-        result.addAll(charValue.chars().map(LambdaFooBarQix::charToCode).filter(Objects::nonNull).collect(Collectors.<String>toList()));
-        return (result.isEmpty() ? charValue : result.stream().collect(Collectors.toStringBuilder()).toString());
+        result.addAll(charValue.chars().mapToObj(LambdaFooBarQix::charToCode).filter(Objects::nonNull).collect(Collectors.<String>toList()));
+        return (result.isEmpty() ? charValue : result.stream().reduce("", String::concat));
     }
 
     public static void main(String[] args) {

@@ -1,6 +1,9 @@
 package com.octo.parallel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Henri Tremblay
@@ -23,6 +26,10 @@ public class MatrixComputation {
                 result[i][j] = temp;
             }
         }
+
+        int i = 0;
+        Consumer<String> f = p -> System.out.println(i);
+        //i += i;
         return result;
     }
 
@@ -47,15 +54,25 @@ public class MatrixComputation {
             rows[i] = new Tuple(matA[i], result[i]);
         }
 
-        Arrays.parallelStream(rows).forEach(row -> {
-            for (int j = 0; j < matBCols; j++) {
-                double temp = 0;
-                for (int k = 0; k < matACols; k++) {
-                    temp += row.rowA[k] * matB[k][j];
-                }
-                row.rowResult[j] = temp;
-            }
+        Arrays.stream(rows).parallel().forEach(row -> {
+           for (int j = 0; j < matBCols; j++) {
+              double temp = 0;
+              for (int k = 0; k < matACols; k++) {
+                 temp += row.rowA[k] * matB[k][j];
+              }
+              row.rowResult[j] = temp;
+           }
         });
-        return result;
+
+       return result;
+
+
     }
+
+   public void foo() {
+      final List<String> l = new ArrayList<String>();
+      for (final String s : l) {
+         System.out.println(s);
+      }
+   }
 }

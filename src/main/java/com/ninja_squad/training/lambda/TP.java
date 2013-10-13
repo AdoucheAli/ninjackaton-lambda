@@ -1,7 +1,14 @@
 package com.ninja_squad.training.lambda;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Le TP Lambda
@@ -9,6 +16,9 @@ import java.util.stream.Collectors;
  */
 public class TP {
 
+    public static void main(String[] args) {
+        Arrays.asList(TP.class.getDeclaredMethods()).forEach(m -> System.out.println(m + " " + m.isBridge() + " " + m.isSynthetic()));
+    }
     /**
      * Extrayez une List<String> qui contient les senders des tweets
      */
@@ -20,89 +30,135 @@ public class TP {
      * Faites la même chose, sans appeler getDate() ni System.out.println()
      */
     public static void step2() {
-        Tweet.TWEETS.stream().map(Tweet::getDate).forEach(System.out::println);
+        Tweet.TWEETS
+             .stream()
+             .map(Tweet::getDate)
+             .forEach(System.out::println);
     }
 
     /**
      * Extrayez une List<String> qui contient les senders des tweets
      */
     public static List<String> step3() {
-        return Tweet.TWEETS.stream().map(Tweet::getSender).collect(Collectors.<String>toList());
+        return Tweet.TWEETS
+                    .stream()
+                    .map(Tweet::getSender)
+                    .collect(Collectors.toList());
     }
 
     /**
      * Extrayez une List<String> qui contient les senders des tweets, sans duplicata
      */
     public static List<String> step4() {
-        return Tweet.TWEETS.stream().map(Tweet::getSender).distinct().collect(Collectors.<String>toList());
+        return Tweet.TWEETS
+                    .stream()
+                    .map(Tweet::getSender)
+                    .distinct()
+                    .collect(Collectors.toList());
     }
 
     /**
      * Extrayez une List<String> qui contient les senders des tweets, sans duplicata, triés par ordre alphabétique
      */
     public static List<String> step5() {
-        return Tweet.TWEETS.stream().map(Tweet::getSender).distinct().sorted().collect(Collectors.<String>toList());
+        return Tweet.TWEETS
+                     .stream()
+                     .map(Tweet::getSender)
+                     .distinct()
+                     .sorted()
+                     .collect(Collectors.toList());
     }
 
     /**
      * Extrayez une List<Tweet> qui contient les tweets contenant le hashtag #lambda
      */
     public static List<Tweet> step6() {
-        return Tweet.TWEETS.stream().filter(t -> t.containsHashTag("#lambda")).collect(Collectors.<Tweet>toList());
+        return Tweet.TWEETS
+                    .stream()
+                    .filter(t -> t.containsHashTag("#lambda"))
+                    .collect(Collectors.toList());
     }
 
     /**
      * Extrayez une List<Tweet> qui contient les tweets contenant le hashtag #lambda, triés par sender puis par date
      */
     public static List<Tweet> step7() {
-        return step6().stream().sorted(Comparators.<Tweet, String>comparing(Tweet::getSender).thenComparing(Tweet::getDate))
-                .collect(Collectors.<Tweet>toList());
+        return Tweet.TWEETS
+                    .stream()
+		              .filter(t -> t.containsHashTag("#lambda"))
+			           .sorted(Comparator.comparing(Tweet::getSender)
+                    .thenComparing(Tweet::getDate))
+                    .collect(Collectors.toList());
     }
 
     /**
      * Extrayez un Set<String> qui contient l'ensemble des hash tags des tweets
      */
     public static Set<String> step8() {
-        return Tweet.TWEETS.stream().flatMap(t -> t.getHashTags().stream()).collect(Collectors.<String>toSet());
+        return Tweet.TWEETS
+                    .stream()
+                    .flatMap(t -> t.getHashTags().stream())
+                    .collect(Collectors.toSet());
     }
 
     /**
      * Créez une Map<String, List<Tweet>> qui contient, pour chaque sender, les tweets envoyés par ce sender
      */
     public static Map<String, List<Tweet>> step9() {
-        return Tweet.TWEETS.stream()
-                .collect(Collectors.<Tweet, String, List<Tweet>, Map<String, List<Tweet>>>groupingBy(Tweet::getSender, HashMap::new, ArrayList::new));
+        return Tweet.TWEETS
+                    .stream()
+                    .collect(Collectors.groupingBy(Tweet::getSender, Collectors.toList()));
     }
 
     /**
      * Extrayez deux listes: les tweets qui contiennent le hash tag #lambda, et ceux qui ne les contiennent pas.
      */
     public static Map<Boolean, List<Tweet>> step10() {
-        return Tweet.TWEETS.stream().collect(Collectors.<Tweet, Boolean, List<Tweet>, Map<Boolean, List<Tweet>>>groupingBy(t -> t.containsHashTag("#lambda"), HashMap::new, ArrayList::new));
+
+
+       return Tweet.TWEETS
+                    .stream()
+                    .collect(Collectors.partitioningBy(t -> t.containsHashTag("#lambda")));
     }
 
-    public static class Stats {
-
-        private int count;
-        private int total;
-
-        public Stats(int count, int total) {
-            this.count = count;
-            this.total = total;
-        }
-
-        public int getAverage() {
-            return total / count;
-        }
-
-        public int getTotal() {
-            return total;
-        }
-
-        public int getCount() {
-            return count;
-        }
+    public static Map<Boolean, List<Tweet>> step10x() {
+        Stream<Tweet> stream = Tweet.TWEETS.stream();
+        Predicate<Tweet> lambda = t -> t.containsHashTag("#lambda");
+        Collector<Tweet, ?, Map<Boolean, List<Tweet>>> collector = Collectors.partitioningBy(lambda);
+        return stream.collect(collector);
     }
+
+//    public static <T, K, C extends Collection<T>, M extends Map<K, C>>
+//    Collector<T, M> groupingBy(Function<? super T, ? extends K> classifier,
+//                               Supplier<M> mapFactory,
+//                               Supplier<C> rowFactory)
+   public static class Stats {
+
+      private final int tweetCount;
+      private final int characterCount;
+
+      public Stats(int tweetCount, int characterCount) {
+         this.tweetCount = tweetCount;
+         this.characterCount = characterCount;
+      }
+
+      public Stats(Tweet tweet) {
+         this.tweetCount = 1;
+         this.characterCount = tweet.getText().length();
+      }
+
+      public Stats withStats(Stats stats) {
+         return new Stats(this.tweetCount + stats.tweetCount, this.characterCount + stats.characterCount);
+      }
+
+      public int getAverage() {
+         return tweetCount == 0 ? 0 : (characterCount / tweetCount);
+      }
+
+      public int getTotal() {
+         return characterCount;
+      }
+   }
 
     /**
      * Calculez le total et la moyenne du nombre de caractères des textes des tweets.
@@ -111,15 +167,19 @@ public class TP {
      *     Utilisez stream.collect(..., ..., ...) ou stream.map(...).reduce(...)
      */
     public static Stats step11() {
-        return Tweet.TWEETS.stream().map(t -> new Stats(1, t.getText().length()))
-                .reduce((s1, s2) -> new Stats(s1.getCount() + s2.getCount(), s1.getTotal() + s2.getTotal())).get();
+       return Tweet.TWEETS
+          .stream()
+          .map(Stats::new)
+          .reduce(new Stats(0, 0), (t1, t2) -> t1.withStats(t2));
     }
 
-    /**
-     * Faites la même chose, mais de manière parrallèle
-     */
-    public static Stats step12() {
-        return Tweet.TWEETS.stream().parallel().map(t -> new Stats(1, t.getText().length()))
-                .reduce((s1, s2) -> new Stats(s1.getCount() + s2.getCount(), s1.getTotal() + s2.getTotal())).get();
-    }
+   /**
+    * Faites la même chose, mais de manière parrallèle
+    */
+   public static Stats step12() {
+      return Tweet.TWEETS
+         .parallelStream()
+         .map(Stats::new)
+         .reduce(new Stats(0, 0), (t1, t2) -> t1.withStats(t2));
+   }
 }
